@@ -2,10 +2,10 @@ CC = gcc
 CXX = g++
 CFLAGS = -Wall -Wextra -Wdeprecated-declarations -Wimplicit-function-declaration -Wimplicit-int -Wpointer-arith -Wwrite-strings -Wmissing-noreturn -Wno-unused-parameter -Wsuggest-attribute=format -Wsuggest-attribute=noreturn -Wunused-variable -Winit-self -Wshadow -Wlogical-op -Wconversion -c -O3
 CXXFLAGS = -Wall -Wextra -Wdeprecated-declarations -Wpointer-arith -Wwrite-strings -Wmissing-noreturn -Wno-unused-parameter -Wsuggest-attribute=format -Wsuggest-attribute=noreturn -Wunused-variable -Winit-self -Wshadow -Wlogical-op -Wconversion -c -O3
-INCLUDES = -I/local/include
+INCLUDES = 
 LD = gcc
 LDFLAGS = -shared -Wl,--dll,--enable-stdcall-fixup -static
-LIBS = -L/local/lib -ljpeg -lpng -lz
+LIBS = -ljpeg -lpng -lz
 RM = rm -f
 
 TARGET = image_output_ks.auo
