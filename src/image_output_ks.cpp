@@ -19,7 +19,7 @@ typedef struct {
 	jmp_buf jmpbuf;
 } my_error_mgr;
 static void my_error_exit(j_common_ptr cinfo) {
-	longjmp(((my_error_mgr *)cinfo->err)->jmpbuf, 1);
+	longjmp((reinterpret_cast<my_error_mgr *>(cinfo->err))->jmpbuf, 1);
 }
 
 typedef enum {
@@ -83,10 +83,10 @@ BOOL func_output(OUTPUT_INFO *oip) {
 	prepare_path(oip->savefile, path, name, ext, &spf_start);
 	
 	if ( config.output == OF_JPEG ) {
-		row = (JSAMPROW)calloc(oip->w*3, sizeof(JSAMPLE));
+		row = static_cast<JSAMPROW>( calloc(oip->w*3, sizeof(JSAMPLE)) );
 		if (row==NULL) { return FALSE; }
 	} else if ( config.output == OF_PNG ) {
-		rows = (png_bytepp)calloc(oip->h, sizeof(png_bytep));
+		rows = static_cast<png_bytepp>( calloc(oip->h, sizeof(png_bytep)) );
 		if (rows==NULL) { return FALSE; }
 	} else {
 		return FALSE;
@@ -113,9 +113,9 @@ BOOL func_output(OUTPUT_INFO *oip) {
 		if (fp==NULL) { return finish_func_output(FALSE); }
 		BOOL fail;
 		if ( config.output == OF_JPEG ) {
-			fail = put_jpeg_file(fp, (unsigned char *)oip->func_get_video(i));
+			fail = put_jpeg_file(fp, static_cast<unsigned char *>( oip->func_get_video(i) ));
 		} else if ( config.output == OF_PNG ) {
-			fail = put_png_file(fp, (png_bytep)oip->func_get_video(i));
+			fail = put_png_file(fp, static_cast<png_bytep>( oip->func_get_video(i) ));
 		} else {
 			fail = TRUE;
 		}
@@ -173,7 +173,7 @@ static BOOL put_jpeg_file(FILE *fp, unsigned char *video) {
 	jpeg_set_quality(&jpegc, config.jpeg_quality, TRUE);
 	jpeg_start_compress(&jpegc, TRUE);
 	for (int y=height-1; y>=0; y--) {
-		bgr_row = (PIXEL_BGR *)(video+y*dib_width);
+		bgr_row = reinterpret_cast<PIXEL_BGR *>(video+y*dib_width);
 		pixel = row;
 		for (int x=0; x<width; x++) {
 			*pixel++ = bgr_row[x].r;
@@ -205,7 +205,7 @@ static BOOL put_png_file(FILE *fp, png_bytep video) {
 	png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
 		PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 	for (int y=0; y<height; y++) {
-		rows[height-y-1] = (png_bytep)video+dib_width*y;
+		rows[height-y-1] = static_cast<png_bytep>(video+dib_width*y);
 	}
 	png_set_rows(png, info, rows);
 	png_write_png(png, info, PNG_TRANSFORM_BGR, NULL);
