@@ -42,9 +42,10 @@ typedef struct {
 } CONFIG;
 static CONFIG config = {OF_JPEG, "%s_%04d", FFS_NAME_NUMBER, 75, 0};
 
-static char pname[] = "連番画像出力";
+#define PLUGIN_NAME "連番画像出力"
+static char pname[] = PLUGIN_NAME;
 static char filefilter[] = "JPEG File (*.jpg)\0*.jpg\0PNG File (*.png)\0*.png\0All File (*.*)\0*.*\0";
-static char information[] = "連番画像出力 " VERSION " by KAZOON";
+static char information[] = PLUGIN_NAME VERSION " by KAZOON";
 OUTPUT_PLUGIN_TABLE output_plugin_table = {
 	0,
 	pname,
@@ -59,7 +60,9 @@ OUTPUT_PLUGIN_TABLE output_plugin_table = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 // reserve
 };
 
-EXTERN_C OUTPUT_PLUGIN_TABLE __declspec(dllexport) * __stdcall GetOutputPluginTable(void) {
+EXTERN_C OUTPUT_PLUGIN_TABLE __declspec(dllexport) * __stdcall
+GetOutputPluginTable(void)
+{
 	return &output_plugin_table;
 }
 
@@ -71,14 +74,18 @@ static JSAMPROW row=NULL;
 static png_bytepp rows=NULL;
 static int width, height, dib_width;
 
-static BOOL finish_func_output(BOOL ret) {
+static BOOL
+finish_func_output(BOOL ret)
+{
 	free(row);
 	row = NULL;
 	free(rows);
-	rows=NULL;
+	rows = NULL;
 	return ret;
 }
-BOOL func_output(OUTPUT_INFO *oip) {
+BOOL
+func_output(OUTPUT_INFO *oip)
+{
 	TCHAR path[MAX_PATH], name[MAX_PATH], ext[MAX_PATH], *spf_start, buff[MAX_PATH];
 	prepare_path(oip->savefile, path, name, ext, &spf_start);
 	
@@ -128,7 +135,9 @@ BOOL func_output(OUTPUT_INFO *oip) {
 }
 
 // 連番ファイル名の準備
-static void prepare_path(const LPSTR savefile, TCHAR *path, TCHAR *name, TCHAR *ext, TCHAR **startp) {
+static void
+prepare_path(const LPSTR savefile, TCHAR *path, TCHAR *name, TCHAR *ext, TCHAR **startp)
+{
 	lstrcpy(path, savefile);
 	BOOL flg = TRUE;
 	*startp = path;
@@ -150,11 +159,15 @@ static void prepare_path(const LPSTR savefile, TCHAR *path, TCHAR *name, TCHAR *
 }
 
 // JPEG出力 成功なら FALSE 失敗なら TRUE を返す
-static BOOL finish_put_jpeg_file(struct jpeg_compress_struct *jpegcp, BOOL ret) {
+static BOOL
+finish_put_jpeg_file(struct jpeg_compress_struct *jpegcp, BOOL ret)
+{
 	jpeg_destroy_compress(jpegcp);
 	return ret;
 }
-static BOOL put_jpeg_file(FILE *fp, unsigned char *video) {
+static BOOL
+put_jpeg_file(FILE *fp, unsigned char *video)
+{
 	struct jpeg_compress_struct jpegc;
 	my_error_mgr myerr;
 	PIXEL_BGR *bgr_row;
@@ -188,11 +201,15 @@ static BOOL put_jpeg_file(FILE *fp, unsigned char *video) {
 }
 
 // PNG出力 成功なら FALSE 失敗なら TRUE を返す
-static BOOL finish_put_png_file(png_structp *pngp, png_infop *infop, BOOL ret) {
+static BOOL
+finish_put_png_file(png_structp *pngp, png_infop *infop, BOOL ret)
+{
 	png_destroy_write_struct(pngp, infop);
 	return ret;
 }
-static BOOL put_png_file(FILE *fp, png_bytep video) {
+static BOOL
+put_png_file(FILE *fp, png_bytep video)
+{
 	png_structp png = NULL;
 	png_infop info = NULL;
 
@@ -215,7 +232,9 @@ static BOOL put_png_file(FILE *fp, png_bytep video) {
 
 // コンフィグ関係
 
-LRESULT CALLBACK func_config_proc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam) {
+LRESULT CALLBACK
+func_config_proc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam)
+{
 	TCHAR buf[16];
 	static OUTPUT_FORMAT of_now=OF_END;
 	if (umsg == WM_INITDIALOG) {
@@ -279,18 +298,24 @@ LRESULT CALLBACK func_config_proc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lp
 	}
 	return FALSE;
 }
-BOOL func_config(HWND hwnd, HINSTANCE dll_hinst) {
+BOOL
+func_config(HWND hwnd, HINSTANCE dll_hinst)
+{
 	DialogBox(dll_hinst, "CONFIG", hwnd, (DLGPROC)func_config_proc);
 	return TRUE;
 }
-int func_config_get(void *data, int size) {
+int
+func_config_get(void *data, int size)
+{
 	if (data) {
 		memcpy(data, &config, sizeof(config));
 		return sizeof(config);
 	}
 	return 0;
 }
-int func_config_set(void *data, int size) {
+int
+func_config_set(void *data, int size)
+{
 	if (size != sizeof(config)) {
 		return 0;
 	}
