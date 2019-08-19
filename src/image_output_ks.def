@@ -1,4 +1,4 @@
-LIBRARY image_output
+LIBRARY image_output_ks
 
 EXPORTS
 	GetOutputPluginTable @1

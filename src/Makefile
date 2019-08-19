@@ -21,7 +21,6 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS) $(RES) $(DEF)
 	$(LD) $(LDFLAGS) -o $(TARGET) $(OBJS) $(RES) $(DEF) $(LIBS)
-	strip $(TARGET)
 
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $<
@@ -40,5 +39,6 @@ clean:
 
 release:
 	make all
+	strip $(TARGET)
 	cp -f $(TARGET) ../
 	make clean
