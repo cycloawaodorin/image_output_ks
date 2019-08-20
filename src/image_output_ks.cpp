@@ -301,7 +301,7 @@ func_config_proc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam)
 BOOL
 func_config(HWND hwnd, HINSTANCE dll_hinst)
 {
-	DialogBox(dll_hinst, "CONFIG", hwnd, (DLGPROC)func_config_proc);
+	DialogBox(dll_hinst, "CONFIG", hwnd, reinterpret_cast<DLGPROC>(func_config_proc));
 	return TRUE;
 }
 int
