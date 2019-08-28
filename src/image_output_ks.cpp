@@ -51,8 +51,8 @@ OUTPUT_PLUGIN_TABLE output_plugin_table = {
 	pname,
 	filefilter,
 	information,
-	NULL, // func_init
-	NULL, // func_exit
+	nullptr, // func_init
+	nullptr, // func_exit
 	func_output,
 	func_config,
 	func_config_get,
@@ -67,20 +67,20 @@ GetOutputPluginTable(void)
 }
 
 static void prepare_path(const LPSTR savefile, TCHAR *path, TCHAR *name, TCHAR *ext, TCHAR **startp);
-static BOOL put_jpeg_file(FILE *fp, unsigned char *video);
-static BOOL put_png_file(FILE *fp, png_bytep video);
+static BOOL put_jpeg_file(FILE *fp, const unsigned char *video);
+static BOOL put_png_file(FILE *fp, const png_bytep video);
 
-static JSAMPROW row=NULL;
-static png_bytepp rows=NULL;
+static JSAMPROW row=nullptr;
+static png_bytepp rows=nullptr;
 static int width, height, dib_width;
 
 static BOOL
 finish_func_output(BOOL ret)
 {
 	free(row);
-	row = NULL;
+	row = nullptr;
 	free(rows);
-	rows = NULL;
+	rows = nullptr;
 	return ret;
 }
 BOOL
@@ -91,10 +91,10 @@ func_output(OUTPUT_INFO *oip)
 	
 	if ( config.output == OF_JPEG ) {
 		row = static_cast<JSAMPROW>( calloc(oip->w*3, sizeof(JSAMPLE)) );
-		if (row==NULL) { return FALSE; }
+		if (row==nullptr) { return FALSE; }
 	} else if ( config.output == OF_PNG ) {
 		rows = static_cast<png_bytepp>( calloc(oip->h, sizeof(png_bytep)) );
-		if (rows==NULL) { return FALSE; }
+		if (rows==nullptr) { return FALSE; }
 	} else {
 		return FALSE;
 	}
@@ -117,7 +117,7 @@ func_output(OUTPUT_INFO *oip)
 		}
 		wsprintf(spf_start, "%s%s", buff, ext);
 		FILE *fp=fopen(path, "wb");
-		if (fp==NULL) { return finish_func_output(FALSE); }
+		if (fp==nullptr) { return finish_func_output(FALSE); }
 		BOOL fail;
 		if ( config.output == OF_JPEG ) {
 			fail = put_jpeg_file(fp, static_cast<unsigned char *>( oip->func_get_video(i) ));
@@ -166,11 +166,11 @@ finish_put_jpeg_file(struct jpeg_compress_struct *jpegcp, BOOL ret)
 	return ret;
 }
 static BOOL
-put_jpeg_file(FILE *fp, unsigned char *video)
+put_jpeg_file(FILE *fp, const unsigned char *video)
 {
 	struct jpeg_compress_struct jpegc;
 	my_error_mgr myerr;
-	PIXEL_BGR *bgr_row;
+	const PIXEL_BGR *bgr_row;
 	JSAMPLE *pixel;
 	
 	myerr.jerr.error_exit = my_error_exit;
@@ -186,7 +186,7 @@ put_jpeg_file(FILE *fp, unsigned char *video)
 	jpeg_set_quality(&jpegc, config.jpeg_quality, TRUE);
 	jpeg_start_compress(&jpegc, TRUE);
 	for (int y=height-1; y>=0; y--) {
-		bgr_row = reinterpret_cast<PIXEL_BGR *>(video+y*dib_width);
+		bgr_row = reinterpret_cast<const PIXEL_BGR *>(video+y*dib_width);
 		pixel = row;
 		for (int x=0; x<width; x++) {
 			*pixel++ = bgr_row[x].r;
@@ -208,15 +208,15 @@ finish_put_png_file(png_structp *pngp, png_infop *infop, BOOL ret)
 	return ret;
 }
 static BOOL
-put_png_file(FILE *fp, png_bytep video)
+put_png_file(FILE *fp, const png_bytep video)
 {
-	png_structp png = NULL;
-	png_infop info = NULL;
+	png_structp png = nullptr;
+	png_infop info = nullptr;
 
-	png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	if (png == NULL) { return finish_put_png_file(&png, &info, TRUE); }
+	png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+	if (png == nullptr) { return finish_put_png_file(&png, &info, TRUE); }
 	info = png_create_info_struct(png);
-	if (info == NULL) { return finish_put_png_file(&png, &info, TRUE); }
+	if (info == nullptr) { return finish_put_png_file(&png, &info, TRUE); }
 	if (setjmp(png_jmpbuf(png))) { return finish_put_png_file(&png, &info, TRUE); }
 	png_init_io(png, fp);
 	png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
@@ -225,7 +225,7 @@ put_png_file(FILE *fp, png_bytep video)
 		rows[height-y-1] = static_cast<png_bytep>(video+dib_width*y);
 	}
 	png_set_rows(png, info, rows);
-	png_write_png(png, info, PNG_TRANSFORM_BGR, NULL);
+	png_write_png(png, info, PNG_TRANSFORM_BGR, nullptr);
 
 	return finish_put_png_file(&png, &info, FALSE);
 }
