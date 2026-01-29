@@ -4,9 +4,10 @@ JPEGまたはPNG形式の連番画像出力を行う，AviUtlの出力プラグ�
 
 ## インストール
 AviUtlのルートまたは plugins ディレクトリに image_output_ks.auo をコピーします．
+使うだけならバイナリの image_output_ks.auo を使えばよく，コンパイルの必要はないと思います．
 
 ## ビルド
-MSYS上でsrcディレクトリに入り，`make`します．
+MSYS2上で src ディレクトリに入り，`make`します．
 ビルドには libjpeg および libpng が必要です．MSYS2上の gcc 以外でのコンパイルは想定されていませんので，必要なら`Makefile`を参照の上，適当にビルドしてください．
 
 ## 設定項目
