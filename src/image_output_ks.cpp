@@ -75,7 +75,7 @@ static png_bytepp rows=nullptr;
 static int width, height, dib_width;
 
 static BOOL
-finish_func_output(BOOL ret)
+finish_func_output(const BOOL &ret)
 {
 	free(row);
 	row = nullptr;
@@ -160,7 +160,7 @@ prepare_path(const LPSTR savefile, TCHAR *path, TCHAR *name, TCHAR *ext, TCHAR *
 
 // JPEGèoóÕ ê¨å˜Ç»ÇÁ FALSE é∏îsÇ»ÇÁ TRUE Çï‘Ç∑
 static BOOL
-finish_put_jpeg_file(struct jpeg_compress_struct *jpegcp, BOOL ret)
+finish_put_jpeg_file(struct jpeg_compress_struct *jpegcp, const BOOL &ret)
 {
 	jpeg_destroy_compress(jpegcp);
 	return ret;
@@ -202,7 +202,7 @@ put_jpeg_file(FILE *fp, const unsigned char *video)
 
 // PNGèoóÕ ê¨å˜Ç»ÇÁ FALSE é∏îsÇ»ÇÁ TRUE Çï‘Ç∑
 static BOOL
-finish_put_png_file(png_structp *pngp, png_infop *infop, BOOL ret)
+finish_put_png_file(png_structp *pngp, png_infop *infop, const BOOL &ret)
 {
 	png_destroy_write_struct(pngp, infop);
 	return ret;
@@ -238,9 +238,9 @@ func_config_proc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam)
 	TCHAR buf[16];
 	static OUTPUT_FORMAT of_now=OF_END;
 	if (umsg == WM_INITDIALOG) {
-		SetDlgItemText(hdlg, IDC_FORMAT, config.fmt);
+		SetDlgItemTextA(hdlg, IDC_FORMAT, config.fmt);
 		wsprintf(buf, "%d", config.jpeg_quality);
-		SetDlgItemText(hdlg, IDC_JPEGQ, buf);
+		SetDlgItemTextA(hdlg, IDC_JPEGQ, buf);
 		of_now = config.output;
 		if ( of_now == OF_JPEG ) {
 			SendMessage(GetDlgItem(hdlg, IDC_JPEG), BM_SETCHECK , TRUE , 0);
@@ -250,7 +250,7 @@ func_config_proc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam)
 			EnableWindow(GetDlgItem(hdlg, IDC_JPEGQ), FALSE);
 		}
 		wsprintf(buf, "%d", config.offset);
-		SetDlgItemText(hdlg, IDC_OFFSET, buf);
+		SetDlgItemTextA(hdlg, IDC_OFFSET, buf);
 		return TRUE;
 	} else if (umsg==WM_COMMAND) {
 		WORD lwparam = LOWORD(wparam);
@@ -258,7 +258,7 @@ func_config_proc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam)
 			EndDialog(hdlg, LOWORD(wparam));
 		} else if (lwparam == IDOK) {
 			config.output = of_now;
-			GetDlgItemText(hdlg, IDC_FORMAT, config.fmt, sizeof(config.fmt)-1);
+			GetDlgItemTextA(hdlg, IDC_FORMAT, config.fmt, sizeof(config.fmt)-1);
 			BOOL s_found=FALSE, d_found=FALSE;
 			config.ffs = FFS_END;
 			for (TCHAR *p=config.fmt; *p; p++) {
@@ -283,9 +283,9 @@ func_config_proc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam)
 					}
 				}
 			}
-			GetDlgItemText(hdlg, IDC_JPEGQ, buf, sizeof(buf)-1);
+			GetDlgItemTextA(hdlg, IDC_JPEGQ, buf, sizeof(buf)-1);
 			config.jpeg_quality = atoi(buf);
-			GetDlgItemText(hdlg, IDC_OFFSET, buf, sizeof(buf)-1);
+			GetDlgItemTextA(hdlg, IDC_OFFSET, buf, sizeof(buf)-1);
 			config.offset = atoi(buf);
 			EndDialog(hdlg, LOWORD(wparam));
 		} else if (lwparam == IDC_JPEG) {
@@ -301,7 +301,7 @@ func_config_proc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam)
 BOOL
 func_config(HWND hwnd, HINSTANCE dll_hinst)
 {
-	DialogBox(dll_hinst, "CONFIG", hwnd, reinterpret_cast<DLGPROC>(func_config_proc));
+	DialogBoxA(dll_hinst, "CONFIG", hwnd, reinterpret_cast<DLGPROC>(func_config_proc));
 	return TRUE;
 }
 int
