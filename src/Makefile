@@ -1,11 +1,11 @@
 CC = gcc
 CXX = g++
 CXXWFLAGS = -Wall -Wextra -Wdeprecated-declarations -Wpointer-arith -Wwrite-strings -Wmissing-noreturn -Wno-unused-parameter -Wsuggest-attribute=format -Wsuggest-attribute=noreturn -Wunused-variable -Winit-self -Wshadow -Wlogical-op -Wconversion -Wold-style-cast
-CXXFLAGS = -c -O3 -std=c++17
+CXXFLAGS = -c -O3 -std=c++23
 INCLUDES = 
 LD = gcc
 LDFLAGS = -shared -Wl,--dll,--enable-stdcall-fixup -static
-LIBS = -ljpeg -lpng -lz
+LIBS = -static -lstdc++ -ljpeg -lpng -lz
 RM = rm -f
 
 TARGET = image_output_ks.auo
@@ -27,7 +27,7 @@ $(TARGET): $(OBJS) $(RES) $(DEF)
 .rc.res:
 	windres --input-format=rc --output-format=coff -o $@ $<
 
-image_output_ks.o: output.h image_output_ks.h
+image_output_ks.o: output.hpp image_output_ks.h
 image_output_ks.res: image_output_ks.h
 
 clean:
