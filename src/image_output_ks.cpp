@@ -1,9 +1,7 @@
 ﻿#include <windows.h>
-#include <stdlib.h>
 #include <jpeglib.h>
 #include <setjmp.h>
 #include <png.h>
-#include <string>
 #include <format>
 #include <regex>
 #include "output.hpp"
@@ -268,7 +266,7 @@ func_config_proc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam)
 	static OUTPUT_FORMAT of_now=OF_END;
 	if ( umsg == WM_INITDIALOG ) {
 		SetDlgItemTextW(hdlg, IDC_FORMAT, Utf8ToUtf16(config.fmt).c_str());
-		SetDlgItemTextW(hdlg, IDC_JPEGQ, Utf8ToUtf16(std::format("{}", config.jpeg_quality)).c_str());
+		SetDlgItemTextW(hdlg, IDC_JPEGQ, std::format(L"{}", config.jpeg_quality).c_str());
 		of_now = config.output;
 		if ( of_now == OF_JPEG ) {
 			SendMessage(GetDlgItem(hdlg, IDC_JPEG), BM_SETCHECK , TRUE , 0);
@@ -277,7 +275,7 @@ func_config_proc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam)
 			SendMessage(GetDlgItem(hdlg, IDC_PNG), BM_SETCHECK , TRUE , 0);
 			EnableWindow(GetDlgItem(hdlg, IDC_JPEGQ), FALSE);
 		}
-		SetDlgItemTextW(hdlg, IDC_OFFSET, Utf8ToUtf16(std::format("{}", config.offset)).c_str());
+		SetDlgItemTextW(hdlg, IDC_OFFSET, std::format(L"{}", config.offset).c_str());
 		return TRUE;
 	} else if ( umsg==WM_COMMAND ) {
 		WORD lwparam = LOWORD(wparam);
@@ -285,25 +283,25 @@ func_config_proc(HWND hdlg, UINT umsg, WPARAM wparam, LPARAM lparam)
 			EndDialog(hdlg, LOWORD(wparam));
 		} else if ( lwparam == IDOK ) {
 			config.output = of_now;
-			std::wstring wstr(1023, 0);
+			std::wstring wstr(1023, L'\0');
 			GetDlgItemTextW(hdlg, IDC_FORMAT, wstr.data(), wstr.size());
 			config.fmt = Utf16ToUtf8(wstr);
 			try {
 				static_cast<void>(std::vformat(config.fmt, std::make_format_args(config.offset, "test")));
 			} catch (std::format_error &err) {
 				std::string str = std::format("ファイル名フォーマットに以下のエラーがあるため，デフォルト値「{}」に変更されました．\n{}", default_format, err.what());
-				MessageBoxW(hdlg, Utf8ToUtf16(str).c_str(), Utf8ToUtf16("フォーマット文字列エラー").c_str(), MB_OK);
+				MessageBoxW(hdlg, Utf8ToUtf16(str).c_str(), L"フォーマット文字列エラー", MB_OK);
 				config.fmt = default_format;
 			}
 			GetDlgItemTextW(hdlg, IDC_JPEGQ, wstr.data(), wstr.size());
-			config.jpeg_quality = std::stoi(Utf16ToUtf8(wstr));
+			config.jpeg_quality = std::stoi(wstr);
 			if ( config.jpeg_quality < 0 ) {
 				config.jpeg_quality = 0;
 			} else if ( 100 < config.jpeg_quality ) {
 				config.jpeg_quality = 100;
 			}
 			GetDlgItemTextW(hdlg, IDC_OFFSET, wstr.data(), wstr.size());
-			config.offset = std::stoi(Utf16ToUtf8(wstr));
+			config.offset = std::stoi(wstr);
 			EndDialog(hdlg, LOWORD(wparam));
 		} else if ( lwparam == IDC_JPEG ) {
 			of_now = OF_JPEG;
@@ -345,9 +343,20 @@ func_config_set(void *data, int size)
 	}
 	memcpy(&cn, data, sizeof(cn));
 	config.output = cn.output;
-	config.jpeg_quality = cn.jpeg_quality;
+	if ( cn.jpeg_quality < 0 ) {
+		config.jpeg_quality = 0;
+	} else if ( 100 < cn.jpeg_quality ) {
+		config.jpeg_quality = 100;
+	} else {
+		config.jpeg_quality = cn.jpeg_quality;
+	}
 	config.offset = cn.offset;
 	config.fmt.resize(size-sizeof(cn));
 	memcpy(config.fmt.data(), static_cast<char *>(data)+sizeof(cn), size-sizeof(cn));
+	try {
+		static_cast<void>(std::vformat(config.fmt, std::make_format_args(config.offset, "test")));
+	} catch (std::format_error &err) {
+		config.fmt = default_format;
+	}
 	return size;
 }
